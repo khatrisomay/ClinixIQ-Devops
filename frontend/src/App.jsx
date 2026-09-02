@@ -1,7 +1,8 @@
 ﻿import React, { useState } from 'react';
 import Navbar from './components/Navbar';
 import TriageChat from './components/TriageChat';
-import { Activity, ShieldCheck } from 'lucide-react';
+import AnalyticsDashboard from './components/AnalyticsDashboard';
+import { ShieldCheck } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('triage');
@@ -42,9 +43,12 @@ export default function App() {
           </div>
         </div>
 
-        {/* Dynamic View */}
+        {/* Dynamic Views */}
         {activeTab === 'triage' && (
           <TriageChat onOpenReport={() => setActiveTab('analytics')} />
+        )}
+        {activeTab === 'analytics' && (
+          <AnalyticsDashboard />
         )}
       </main>
     </div>
