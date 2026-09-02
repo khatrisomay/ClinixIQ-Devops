@@ -2,17 +2,22 @@
 import Navbar from './components/Navbar';
 import TriageChat from './components/TriageChat';
 import AnalyticsDashboard from './components/AnalyticsDashboard';
-import { ShieldCheck } from 'lucide-react';
+import PricingModal from './components/PricingModal';
+import ClinicalReportModal from './components/ClinicalReportModal';
+import { ShieldCheck, HeartPulse } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('triage');
+  const [reportModalOpen, setReportModalOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-sky-500 selection:text-white">
+      {/* Navigation */}
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
 
+      {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Top Hero Stats */}
+        {/* Top Hero Stats Banner */}
         <div className="mb-6 p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-sky-950/40 to-slate-900 border border-slate-800 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-sky-500/10 text-sky-400 text-xs font-semibold mb-1.5 border border-sky-500/20">
@@ -43,14 +48,38 @@ export default function App() {
           </div>
         </div>
 
-        {/* Dynamic Views */}
+        {/* Tab Routing */}
         {activeTab === 'triage' && (
-          <TriageChat onOpenReport={() => setActiveTab('analytics')} />
+          <TriageChat onOpenReport={() => setReportModalOpen(true)} />
         )}
         {activeTab === 'analytics' && (
           <AnalyticsDashboard />
         )}
+        {activeTab === 'pricing' && (
+          <PricingModal onSelectPlan={(plan) => alert(`Selected plan: ${plan}. Stripe billing checkout integration will activate in Phase 5!`)} />
+        )}
       </main>
+
+      {/* Clinical Diagnostic Report Modal */}
+      <ClinicalReportModal
+        isOpen={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+      />
+
+      {/* Footer */}
+      <footer className="border-t border-slate-900 bg-slate-950/80 py-6 text-center text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <div className="flex items-center space-x-2">
+            <HeartPulse className="w-4 h-4 text-sky-500" />
+            <span className="text-slate-400 font-semibold">ClinixIQ DevOps Platform</span>
+            <span>•</span>
+            <span>Production CI/CD Edition</span>
+          </div>
+          <div>
+            Built with React 18, Vite, Tailwind CSS, Docker & Kubernetes.
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
