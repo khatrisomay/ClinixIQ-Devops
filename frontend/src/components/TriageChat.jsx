@@ -1,5 +1,5 @@
 ﻿import React, { useState } from 'react';
-import { Send, AlertTriangle, User, Bot, Loader2, FileText, CheckCircle2, AlertOctagon, HelpCircle, Stethoscope } from 'lucide-react';
+import { Send, AlertTriangle, User, Bot, Loader2, FileText, Stethoscope, CheckCircle2, Wifi, WifiOff } from 'lucide-react';
 
 const COMMON_SYMPTOMS = [
   "High Fever & Chills",
@@ -17,15 +17,16 @@ export default function TriageChat({ onOpenReport }) {
     {
       id: 1,
       sender: 'bot',
-      text: "Hello, I am ClinixIQ's medical triage assistant. Please describe the symptoms you or your patient are experiencing.",
+      text: "Hello, I am ClinixIQ's clinical triage assistant powered by our Python ML inference microservice. Please describe your symptoms or select a prompt below.",
       prediction: null,
       timestamp: 'Just now'
     }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isLiveApi, setIsLiveApi] = useState(false);
 
-  const handleSend = (textToSend) => {
+  const handleSend = async (textToSend) => {
     const symptomText = textToSend || input;
     if (!symptomText.trim()) return;
 
@@ -39,43 +40,75 @@ export default function TriageChat({ onOpenReport }) {
     setInput('');
     setIsTyping(true);
 
-    // Simulated diagnosis inference (will route to FastAPI /api/v1/predict in Kubernetes)
+    try {
+      // Call Live FastAPI ML Endpoint
+      const response = await fetch('/api/v1/triage/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          symptoms: symptomText,
+          duration_days: 2
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setIsLiveApi(true);
+
+        const botResponse = {
+          id: Date.now() + 1,
+          sender: 'bot',
+          text: `Inference completed (${data.inference_latency_ms}ms) for reported symptoms.`,
+          prediction: {
+            condition: data.condition,
+            confidence: data.confidence,
+            severity: data.severity,
+            triageColor: data.triage_color,
+            action: data.action,
+            differentials: data.differentials.map((d) => `${d.condition} (${d.probability}%)`),
+            extracted: data.extracted_symptoms,
+            isLive: true
+          },
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        setMessages((prev) => [...prev, botResponse]);
+        setIsTyping(false);
+        return;
+      }
+    } catch (err) {
+      console.warn('Backend API offline, utilizing resilient local triage heuristic:', err);
+    }
+
+    // Graceful Fallback if backend is offline
+    setIsLiveApi(false);
     setTimeout(() => {
       let condition = "Viral Upper Respiratory Infection";
-      let confidence = 88;
+      let confidence = 86;
       let severity = "Moderate";
       let triageColor = "text-amber-400 bg-amber-500/10 border-amber-500/30";
-      let action = "Hydrate, monitor body temperature every 4 hours. Schedule a telehealth consult if fever exceeds 102°F for > 48 hours.";
-      let differentials = ["Influenza Type A (64%)", "Acute Bronchitis (42%)", "Allergic Rhinitis (18%)"];
+      let action = "Hydrate adequately and rest. Consult doctor if fever exceeds 102°F.";
+      let differentials = ["Influenza Type A (64%)", "Acute Bronchitis (42%)"];
 
       const lower = symptomText.toLowerCase();
-      if (lower.includes("chest") || lower.includes("breath") || lower.includes("pressure")) {
+      if (lower.includes("chest") || lower.includes("breath")) {
         condition = "Acute Cardiopulmonary Distress";
         confidence = 94;
         severity = "High Alert / Emergency";
         triageColor = "text-rose-400 bg-rose-500/10 border-rose-500/30";
-        action = "Immediate Medical Evaluation Required. Contact local emergency medical services or proceed to nearest emergency department immediately.";
-        differentials = ["Acute Coronary Syndrome (85%)", "Severe Pulmonary Embolism (54%)", "Costochondritis (22%)"];
-      } else if (lower.includes("headache") || lower.includes("migraine")) {
-        condition = "Neurological Tension / Migraine Syndrome";
-        confidence = 82;
-        severity = "Mild to Moderate";
-        triageColor = "text-sky-400 bg-sky-500/10 border-sky-500/30";
-        action = "Rest in a quiet, darkened room. Maintain hydration. Over-the-counter NSAIDs may provide relief as recommended by your physician.";
-        differentials = ["Cluster Headache (45%)", "Sinus Headache (38%)", "Cervicogenic Headache (15%)"];
+        action = "Immediate Medical Evaluation Required. Contact emergency services (911/EMS).";
+        differentials = ["Acute Coronary Syndrome (85%)", "Bacterial Pneumonia (54%)"];
       }
 
       const botResponse = {
         id: Date.now() + 1,
         sender: 'bot',
-        text: `Clinical evaluation completed for reported symptoms: "${symptomText}"`,
-        prediction: { condition, confidence, severity, triageColor, action, differentials },
+        text: `Clinical heuristic completed for: "${symptomText}"`,
+        prediction: { condition, confidence, severity, triageColor, action, differentials, isLive: false },
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
-
       setMessages((prev) => [...prev, botResponse]);
       setIsTyping(false);
-    }, 1200);
+    }, 800);
   };
 
   return (
@@ -86,13 +119,21 @@ export default function TriageChat({ onOpenReport }) {
           <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
           <span><strong>Medical Disclaimer:</strong> Automated triage decision support. Not a final clinical diagnosis.</span>
         </span>
-        <button
-          onClick={onOpenReport}
-          className="flex items-center space-x-1.5 text-sky-400 hover:text-sky-300 font-medium transition-colors cursor-pointer"
-        >
-          <FileText className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">View Diagnostic Report</span>
-        </button>
+        <div className="flex items-center space-x-3">
+          <span className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-mono ${
+            isLiveApi ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-400 border border-slate-700'
+          }`}>
+            {isLiveApi ? <Wifi className="w-3 h-3 text-emerald-400" /> : <WifiOff className="w-3 h-3 text-slate-400" />}
+            {isLiveApi ? 'FastAPI: Live' : 'API: Auto-Connect'}
+          </span>
+          <button
+            onClick={onOpenReport}
+            className="flex items-center space-x-1.5 text-sky-400 hover:text-sky-300 font-medium transition-colors cursor-pointer"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">View Diagnostic Report</span>
+          </button>
+        </div>
       </div>
 
       {/* Messages Feed */}
@@ -100,7 +141,6 @@ export default function TriageChat({ onOpenReport }) {
         {messages.map((msg) => (
           <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`flex space-x-3 max-w-2xl ${msg.sender === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
-              {/* Avatar */}
               <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-md ${
                 msg.sender === 'user'
                   ? 'bg-gradient-to-tr from-sky-600 to-blue-600 text-white'
@@ -109,7 +149,6 @@ export default function TriageChat({ onOpenReport }) {
                 {msg.sender === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
               </div>
 
-              {/* Bubble Body */}
               <div className="space-y-2">
                 <div className={`p-4 rounded-2xl text-sm leading-relaxed ${
                   msg.sender === 'user'
@@ -119,7 +158,6 @@ export default function TriageChat({ onOpenReport }) {
                   {msg.text}
                 </div>
 
-                {/* AI Prediction Card */}
                 {msg.prediction && (
                   <div className="p-4 bg-slate-800/90 border border-sky-500/30 rounded-xl space-y-3 shadow-xl backdrop-blur-sm">
                     <div className="flex items-center justify-between border-b border-slate-700/60 pb-2.5">
@@ -146,7 +184,7 @@ export default function TriageChat({ onOpenReport }) {
 
                     {msg.prediction.differentials && (
                       <div className="pt-1">
-                        <div className="text-[11px] text-slate-400 mb-1.5 font-medium">Other Probable Differentials:</div>
+                        <div className="text-[11px] text-slate-400 mb-1.5 font-medium">Differential Spectrum:</div>
                         <div className="flex flex-wrap gap-1.5">
                           {msg.prediction.differentials.map((diff, i) => (
                             <span key={i} className="text-[11px] bg-slate-900 text-slate-300 px-2 py-0.5 rounded-md border border-slate-700/60">
@@ -170,7 +208,7 @@ export default function TriageChat({ onOpenReport }) {
         {isTyping && (
           <div className="flex items-center space-x-3 text-slate-400 text-xs pl-11">
             <Loader2 className="w-4 h-4 animate-spin text-sky-400" />
-            <span className="font-mono">Processing clinical tokens via Python ML inference worker...</span>
+            <span className="font-mono">Routing tokens to Python FastAPI ML engine...</span>
           </div>
         )}
       </div>
@@ -188,7 +226,7 @@ export default function TriageChat({ onOpenReport }) {
         ))}
       </div>
 
-      {/* Prompt Input Box */}
+      {/* Input Box */}
       <div className="p-4 bg-slate-900 border-t border-slate-800 flex items-center space-x-2">
         <input
           type="text"
