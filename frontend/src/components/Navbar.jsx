@@ -1,113 +1,100 @@
 ﻿import React, { useState } from 'react';
-import { HeartPulse, Activity, Sparkles, Menu, X, ShieldCheck, Server } from 'lucide-react';
+import BrandLogo from './BrandLogo';
 
-export default function Navbar({ activeTab, setActiveTab }) {
+export default function Navbar({ activeTab, setActiveTab, onOpenPricing }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const tabs = [
+  const navLinks = [
     { id: 'triage', label: 'Triage Assistant' },
-    { id: 'analytics', label: 'Analytics & Risk' },
-    { id: 'pricing', label: 'Pro Plans' },
+    { id: 'analytics', label: 'Risk Analytics' },
+    { id: 'pricing', label: 'Pricing' },
+    { id: 'docs', label: 'Clinical Docs' },
   ];
 
   return (
-    <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Brand Logo */}
-        <div 
-          className="flex items-center space-x-3 cursor-pointer group"
-          onClick={() => { setActiveTab('triage'); setMobileMenuOpen(false); }}
-        >
-          <div className="p-2 bg-gradient-to-tr from-sky-500 to-indigo-600 rounded-xl shadow-lg shadow-sky-500/25 group-hover:scale-105 transition-transform">
-            <HeartPulse className="w-5 h-5 text-white animate-pulse" />
+    <header className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-xl border-b border-[#dae2fd]/60 shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+      <div className="h-16 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+        {/* Brand and Certification Badge */}
+        <div className="flex items-center gap-6">
+          <div 
+            className="flex items-center cursor-pointer transition-opacity hover:opacity-90"
+            onClick={() => setActiveTab('triage')}
+          >
+            <BrandLogo className="h-9 w-auto object-contain" />
           </div>
-          <div>
-            <span className="text-xl font-bold tracking-tight text-white">
-              Clinix<span className="text-sky-400">IQ</span>
+
+          <div className="hidden xl:flex items-center gap-2 px-3 py-1 rounded-full bg-[#6cf8bb]/20 text-[#006c49] text-[11px] font-semibold">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#006c49] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#006c49]"></span>
             </span>
-            <span className="ml-2 text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20">
-              DevOps v1.0
-            </span>
+            <span>HIPAA & GDPR Ready • TLS Encrypted</span>
           </div>
         </div>
 
-        {/* Desktop Tabs */}
-        <nav className="hidden md:flex space-x-1">
-          {tabs.map((tab) => (
+        {/* Navigation Tabs */}
+        <nav className="hidden md:flex items-center gap-1.5">
+          {navLinks.map((link) => (
             <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${
-                activeTab === tab.id
-                  ? 'bg-sky-500/10 text-sky-400 border border-sky-500/30 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+              key={link.id}
+              onClick={() => setActiveTab(link.id)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                activeTab === link.id
+                  ? 'bg-[#007bb9] text-white font-semibold shadow-sm'
+                  : 'text-[#3f4850] hover:text-[#131b2e] hover:bg-[#eaedff]'
               }`}
             >
-              {tab.label}
+              {link.label}
             </button>
           ))}
         </nav>
 
-        {/* Cluster Telemetry & CTA */}
-        <div className="hidden lg:flex items-center space-x-4">
-          <div className="flex items-center space-x-2 text-xs text-slate-400 bg-slate-800/70 px-3 py-1.5 rounded-full border border-slate-700/60 shadow-inner">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-            <span className="font-mono text-[11px] text-slate-300 flex items-center gap-1">
-              <Server className="w-3 h-3 text-sky-400" /> K8s Cluster: Healthy
-            </span>
-          </div>
-
+        {/* Right CTA and Patient Profile */}
+        <div className="flex items-center gap-3">
           <button
             onClick={() => setActiveTab('pricing')}
-            className="flex items-center space-x-1.5 text-xs font-semibold px-4 py-2 rounded-lg bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white shadow-md shadow-sky-500/25 transition-all active:scale-95"
+            className="hidden sm:inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-[#006194] text-white text-xs font-semibold hover:bg-[#007bb9] transition-all shadow-sm active:scale-95"
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Upgrade to Pro</span>
+            Upgrade to Pro
           </button>
-        </div>
 
-        {/* Mobile Menu Button */}
-        <div className="md:hidden flex items-center">
+          <div className="flex items-center gap-2 pl-1">
+            <img
+              alt="Clinical Patient Profile"
+              className="w-8 h-8 rounded-full object-cover ring-2 ring-[#0284c7]/30 shadow-sm"
+              src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=120"
+            />
+          </div>
+
+          {/* Mobile hamburger button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 focus:outline-none"
+            className="md:hidden p-1.5 text-[#3f4850] hover:text-[#131b2e] rounded-lg hover:bg-[#eaedff]"
           >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            <span className="material-symbols-outlined text-[24px]">menu</span>
           </button>
         </div>
       </div>
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-slate-800 bg-slate-900 px-4 pt-2 pb-4 space-y-2">
-          {tabs.map((tab) => (
+        <div className="md:hidden border-t border-[#dae2fd] bg-white px-4 py-3 space-y-1 shadow-lg">
+          {navLinks.map((link) => (
             <button
-              key={tab.id}
+              key={link.id}
               onClick={() => {
-                setActiveTab(tab.id);
+                setActiveTab(link.id);
                 setMobileMenuOpen(false);
               }}
-              className={`block w-full text-left px-3 py-2 text-sm font-medium rounded-lg ${
-                activeTab === tab.id
-                  ? 'bg-sky-500/20 text-sky-400'
-                  : 'text-slate-300 hover:bg-slate-800'
+              className={`block w-full text-left px-3 py-2 text-sm rounded-lg font-medium ${
+                activeTab === link.id
+                  ? 'bg-[#007bb9] text-white'
+                  : 'text-[#3f4850] hover:bg-[#eaedff]'
               }`}
             >
-              {tab.label}
+              {link.label}
             </button>
           ))}
-          <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 px-1">
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
-              K8s: Online
-            </span>
-            <button
-              onClick={() => { setActiveTab('pricing'); setMobileMenuOpen(false); }}
-              className="text-sky-400 font-medium"
-            >
-              Upgrade &rarr;
-            </button>
-          </div>
         </div>
       )}
     </header>

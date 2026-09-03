@@ -1,4 +1,4 @@
-/** @type {import('tailwindcss').Config} */
+﻿/** @type {import('tailwindcss').Config} */
 export default {
   content: [
     "./index.html",
@@ -7,15 +7,51 @@ export default {
   theme: {
     extend: {
       colors: {
-        brand: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          500: '#0284c7',
-          600: '#0369a1',
-          700: '#075985',
-          900: '#0c4a6e',
-        }
-      }
+        background: "#faf8ff",
+        surface: "#faf8ff",
+        "surface-container-lowest": "#ffffff",
+        "surface-container-low": "#f2f3ff",
+        "surface-container": "#eaedff",
+        "surface-container-high": "#e2e7ff",
+        "surface-container-highest": "#dae2fd",
+        "surface-dim": "#d2d9f4",
+        "surface-bright": "#faf8ff",
+        "surface-variant": "#dae2fd",
+        "on-surface": "#131b2e",
+        "on-surface-variant": "#3f4850",
+        "inverse-surface": "#283044",
+        "inverse-on-surface": "#eef0ff",
+        primary: "#006194",
+        "primary-container": "#007bb9",
+        "primary-fixed": "#cce5ff",
+        "primary-fixed-dim": "#93ccff",
+        "on-primary": "#ffffff",
+        "on-primary-container": "#fdfcff",
+        "on-primary-fixed": "#001d31",
+        "on-primary-fixed-variant": "#004b73",
+        secondary: "#006c49",
+        "secondary-container": "#6cf8bb",
+        "secondary-fixed": "#6ffbbe",
+        "secondary-fixed-dim": "#4edea3",
+        "on-secondary": "#ffffff",
+        "on-secondary-container": "#00714d",
+        "on-secondary-fixed": "#002113",
+        tertiary: "#00628d",
+        "tertiary-container": "#007cb1",
+        "tertiary-fixed": "#c9e6ff",
+        "tertiary-fixed-dim": "#89ceff",
+        "on-tertiary": "#ffffff",
+        outline: "#707881",
+        "outline-variant": "#bfc7d2",
+        error: "#ba1a1a",
+        "error-container": "#ffdad6",
+        "on-error": "#ffffff",
+        "on-error-container": "#93000a",
+      },
+      fontFamily: {
+        sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
+        geist: ["Geist", "Inter", "sans-serif"],
+      },
     },
   },
   plugins: [],
