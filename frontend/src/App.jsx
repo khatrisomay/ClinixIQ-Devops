@@ -35,14 +35,14 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#faf8ff] text-[#131b2e] flex flex-col font-sans selection:bg-[#006194] selection:text-white">
+    <div className="min-h-screen w-full bg-[#faf8ff] text-[#131b2e] flex flex-col font-sans selection:bg-[#006194] selection:text-white">
       {/* Top Fixed Medical Header */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
       />
 
-      {/* Main Content Area */}
+      {/* Main Content Area: Edge-to-Edge Fluid Full Width */}
       <main className="w-full pt-20 flex-1 flex flex-col">
         {/* Dynamic Clinical Alert Ribbon */}
         <TriageAcuityRibbon
@@ -51,9 +51,9 @@ export default function App() {
           onTriggerER={handleTriggerER}
         />
 
-        {/* Primary Interactive Workspace */}
+        {/* Primary Interactive Workspace: Full Width Grid */}
         {(activeTab === 'triage' || activeTab === 'analytics') && (
-          <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-8 pb-10 pt-2 grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+          <div className="w-full px-4 sm:px-8 lg:px-12 pb-10 pt-2 grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
             {/* Left Panel: Conversational AI Diagnostic Intake Chat (5 cols) */}
             <TriageChatPanel onTriageComplete={handleTriageComplete} />
 
@@ -76,7 +76,7 @@ export default function App() {
 
         {/* Clinical Docs View if Tab Selected */}
         {activeTab === 'docs' && (
-          <div className="max-w-5xl mx-auto px-6 py-10 space-y-5">
+          <div className="w-full px-4 sm:px-8 lg:px-12 py-10 space-y-5">
             <h2 className="text-3xl font-extrabold text-[#131b2e] tracking-tight">ClinixIQ Clinical Protocol & Regulatory Documentation</h2>
             <div className="p-8 bg-white rounded-2xl border border-[#dae2fd] space-y-4 text-sm sm:text-base text-[#3f4850] leading-relaxed shadow-sm">
               <p><strong>Clinical Validation:</strong> ClinixIQ Bayesian inference models are calibrated against peer-reviewed NHANES epidemiological datasets and Mayo Clinic differential diagnostic pathways.</p>
@@ -95,10 +95,10 @@ export default function App() {
       />
 
       {/* Clinical Footer */}
-      <footer className="w-full bg-[#f2f3ff] border-t border-[#dae2fd]/60 py-10 mt-6">
-        <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[#3f4850] text-xs sm:text-sm">
+      <footer className="w-full bg-[#f2f3ff] border-t border-[#dae2fd]/60 py-10 mt-8">
+        <div className="w-full px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-4 text-[#3f4850] text-sm">
           <div>© 2025 ClinixIQ Health Systems Inc. Clinical Intelligence & Diagnostic Protocol.</div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-8 font-medium">
             <button onClick={() => setActiveTab('docs')} className="hover:text-[#131b2e] transition-colors">
               Compliance & Validation
             </button>
