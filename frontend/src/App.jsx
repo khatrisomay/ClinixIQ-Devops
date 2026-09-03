@@ -43,7 +43,7 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="w-full pt-16 flex-1 flex flex-col">
+      <main className="w-full pt-20 flex-1 flex flex-col">
         {/* Dynamic Clinical Alert Ribbon */}
         <TriageAcuityRibbon
           triageData={triageData}
@@ -53,7 +53,7 @@ export default function App() {
 
         {/* Primary Interactive Workspace */}
         {(activeTab === 'triage' || activeTab === 'analytics') && (
-          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 pt-2 grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+          <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-8 pb-10 pt-2 grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
             {/* Left Panel: Conversational AI Diagnostic Intake Chat (5 cols) */}
             <TriageChatPanel onTriageComplete={handleTriageComplete} />
 
@@ -76,9 +76,9 @@ export default function App() {
 
         {/* Clinical Docs View if Tab Selected */}
         {activeTab === 'docs' && (
-          <div className="max-w-4xl mx-auto px-4 py-8 space-y-4">
-            <h2 className="text-2xl font-bold text-[#131b2e]">ClinixIQ Clinical Protocol & Regulatory Documentation</h2>
-            <div className="p-6 bg-white rounded-2xl border border-[#dae2fd] space-y-3 text-sm text-[#3f4850] leading-relaxed shadow-sm">
+          <div className="max-w-5xl mx-auto px-6 py-10 space-y-5">
+            <h2 className="text-3xl font-extrabold text-[#131b2e] tracking-tight">ClinixIQ Clinical Protocol & Regulatory Documentation</h2>
+            <div className="p-8 bg-white rounded-2xl border border-[#dae2fd] space-y-4 text-sm sm:text-base text-[#3f4850] leading-relaxed shadow-sm">
               <p><strong>Clinical Validation:</strong> ClinixIQ Bayesian inference models are calibrated against peer-reviewed NHANES epidemiological datasets and Mayo Clinic differential diagnostic pathways.</p>
               <p><strong>HIPAA Safe Harbor Compliance:</strong> All free-text clinical symptoms undergo deterministic token de-identification before transmission to the Python ML inference cluster.</p>
               <p><strong>HL7 FHIR Interoperability:</strong> JSON schemas conform to Fast Healthcare Interoperability Resources (FHIR) R4 specifications for direct Epic and Cerner EHR synchronization.</p>
@@ -95,8 +95,8 @@ export default function App() {
       />
 
       {/* Clinical Footer */}
-      <footer className="w-full bg-[#f2f3ff] border-t border-[#dae2fd]/60 py-8">
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[#3f4850] text-xs">
+      <footer className="w-full bg-[#f2f3ff] border-t border-[#dae2fd]/60 py-10 mt-6">
+        <div className="w-full max-w-[1560px] mx-auto px-4 sm:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[#3f4850] text-xs sm:text-sm">
           <div>© 2025 ClinixIQ Health Systems Inc. Clinical Intelligence & Diagnostic Protocol.</div>
           <div className="flex items-center gap-6">
             <button onClick={() => setActiveTab('docs')} className="hover:text-[#131b2e] transition-colors">
