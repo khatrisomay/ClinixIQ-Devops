@@ -1,0 +1,59 @@
+﻿version: '3.8'
+
+services:
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: clinixiq-gateway
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - clinixiq-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: clinixiq-backend-prod
+    restart: always
+    environment:
+      - ENVIRONMENT=production
+      - REDIS_URL=redis://redis:6379/0
+      - LOG_LEVEL=warning
+    depends_on:
+      - redis
+    networks:
+      - clinixiq-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: clinixiq-frontend-prod
+    restart: always
+    depends_on:
+      - backend
+    networks:
+      - clinixiq-network
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: clinixiq-redis-prod
+    restart: always
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-prod-data:/data
+    networks:
+      - clinixiq-network
+
+networks:
+  clinixiq-network:
+    driver: bridge
+
+volumes:
+  redis-prod-data:
