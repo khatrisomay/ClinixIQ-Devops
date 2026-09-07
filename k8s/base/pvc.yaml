@@ -1,0 +1,14 @@
+﻿apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: clinixiq-model-storage
+  namespace: clinixiq
+  labels:
+    app.kubernetes.io/name: clinixiq
+    app.kubernetes.io/component: storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
