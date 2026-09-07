@@ -6,6 +6,7 @@
 [![Jenkins](https://img.shields.io/badge/Jenkins-CI%2FCD-D24939?logo=jenkins&logoColor=white)](https://www.jenkins.io/)
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Redis](https://img.shields.io/badge/Redis-Cache-DC382D?logo=redis&logoColor=white)](https://redis.io/)
 
 **ClinixIQ** is an enterprise-grade, commercial AI-powered symptom triage and disease risk analytics platform. Designed to demonstrate a complete production DevOps lifecycle, ClinixIQ combines interactive clinical NLP triage with Python-generated diagnostic analytics, containerized with Docker, orchestrated via Kubernetes, and continuously delivered via automated Jenkins CI/CD pipelines.
 
@@ -25,9 +26,29 @@
                        │
        ┌───────────────┴───────────────┐
        ▼                               ▼
-[ ML Inference Engine ]     [ Analytics / Graph Gen ]
-  (Scikit-Learn/XGBoost)      (Matplotlib / Plotly)
+[ ML Inference Engine ]     [ Redis Caching Layer ]
+  (Scikit-Learn/XGBoost)      (Sub-millisecond Session State)
 ```
+
+---
+
+## 🐳 Local Docker Compose Quickstart
+
+```bash
+# Clone the repository
+git clone https://github.com/khatrisomay/ClinixIQ-Devops.git
+cd ClinixIQ-Devops
+
+# Launch multi-container stack in background
+docker compose up -d
+
+# Verify services
+docker compose ps
+```
+
+- **Frontend**: [http://localhost:3000](http://localhost:3000)
+- **Backend API Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **Architecture Guide**: [docs/docker-compose-guide.md](docs/docker-compose-guide.md)
 
 ---
 
@@ -40,16 +61,9 @@
 
 ---
 
-## 💼 Commercial SaaS Strategy
-1. **Free Triage**: Basic AI symptom evaluation & differential diagnoses.
-2. **Pro Patient ($9.99/mo)**: Unlimited evaluations, chronic symptom tracking, exportable PDF doctor referral summaries, and longitudinal risk graphs.
-3. **Enterprise Clinic API ($149/mo)**: High-throughput API access for telehealth providers with dedicated Kubernetes ingress and HIPAA-aligned data pipelines.
-
----
-
 ## 📅 14-Day Delivery Roadmap
-- **Days 1–3**: React.js Frontend, symptom triage UI, analytics dashboard, SaaS pricing, and Dockerfile. *(Current Phase)*
-- **Days 4–6**: Python FastAPI backend, disease classification model, and Matplotlib/Plotly dynamic graph generator.
-- **Days 7–9**: Docker containerization, Docker Compose, and Kubernetes deployment manifests with HPA.
-- **Days 10–12**: Jenkins declarative pipeline (Build, Lint, Trivy Scan, Helm/K8s Rolling Deploy).
-- **Days 13–14**: Prometheus/Grafana observability dashboards, Stripe billing integration, and production verification.
+- **Day 1**: React.js Frontend, symptom triage UI, analytics dashboard, SaaS pricing, and Dockerfile. *(Complete)*
+- **Day 2**: Python FastAPI backend, disease classification model, and Matplotlib/Plotly dynamic graph generator. *(Complete)*
+- **Days 3–4**: Docker containerization, Docker Compose, Redis caching, and Kubernetes deployment manifests with HPA. *(In Progress)*
+- **Days 5–6**: Jenkins declarative pipeline (Build, Lint, Trivy Scan, Helm/K8s Rolling Deploy).
+- **Days 7–14**: Observability (Prometheus/Grafana), Stripe billing integration, and production verification.
