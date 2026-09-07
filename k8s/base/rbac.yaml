@@ -1,0 +1,27 @@
+﻿apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: clinixiq-app-role
+  namespace: clinixiq
+  labels:
+    app.kubernetes.io/name: clinixiq
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: clinixiq-app-rolebinding
+  namespace: clinixiq
+  labels:
+    app.kubernetes.io/name: clinixiq
+subjects:
+  - kind: ServiceAccount
+    name: clinixiq-sa
+    namespace: clinixiq
+roleRef:
+  kind: Role
+  name: clinixiq-app-role
+  apiGroup: rbac.authorization.k8s.io
