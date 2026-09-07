@@ -1,33 +1,42 @@
 ﻿import time
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.models.schemas import HealthCheckResponse
 from app.api.routes import triage, graphs
+from app.core.config import settings
+from app.core.redis import cache_manager
 
 START_TIME = time.time()
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    await cache_manager.connect()
+    yield
+    # Shutdown
+    await cache_manager.disconnect()
+
 app = FastAPI(
-    title="ClinixIQ Healthcare ML & Triage Platform",
+    title=settings.PROJECT_NAME,
     description="Production-grade AI disease prediction, triage classifier, and dynamic clinical graph generation service.",
-    version="1.0.0",
+    version=settings.VERSION,
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
 
-# Enable CORS for frontend integration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include API Routers
 app.include_router(triage.router)
 app.include_router(graphs.router)
 
-# Kubernetes Health Probes
 @app.get("/healthz", summary="Liveness Probe for Kubernetes")
 async def liveness():
     return {"status": "healthy", "service": "clinixiq-backend"}
@@ -41,7 +50,7 @@ async def system_health():
     return HealthCheckResponse(
         status="operational",
         service="clinixiq-backend-api",
-        version="1.0.0",
+        version=settings.VERSION,
         cluster_role="ml-inference-worker",
         uptime_seconds=round(time.time() - START_TIME, 2)
     )
