@@ -1,0 +1,13 @@
+﻿**/.git
+**/.gitignore
+**/.vscode
+**/.idea
+**/*.md
+!README.md
+k8s/
+helm/
+scripts/
+docs/
+.env*
+*.log
+docker-compose*.yml
