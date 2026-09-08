@@ -1,0 +1,30 @@
+﻿version: '3.8'
+
+services:
+  jenkins-controller:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: clinixiq-jenkins-controller
+    restart: unless-stopped
+    ports:
+      - "8088:8080"
+      - "50000:50000"
+    environment:
+      - CASC_JENKINS_CONFIG=/var/jenkins_home/casc.yaml
+      - JENKINS_ADMIN_PASSWORD=clinixiq-admin-pass
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - ./casc.yaml:/var/jenkins_home/casc.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - clinixiq-jenkins-net
+
+networks:
+  clinixiq-jenkins-net:
+    driver: bridge
+
+volumes:
+  jenkins_home:
+    name: clinixiq_jenkins_home
