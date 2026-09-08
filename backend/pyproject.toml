@@ -1,0 +1,17 @@
+﻿[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-v --cov=app --cov-report=term-missing --cov-report=xml"
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["tests/*", "venv/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError"
+]
