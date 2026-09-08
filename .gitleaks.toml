@@ -1,0 +1,26 @@
+﻿title = "ClinixIQ Secret Detection Configuration"
+
+[extend]
+useDefault = true
+
+[rules]
+[[rules]]
+description = "Generic High-Entropy API Token"
+id = "generic-api-token"
+regex = '''(?i)(?:key|api|token|secret|password|auth)[-_0-9a-z]{0,32}\s*[:=]\s*['"]([0-9a-zA-Z\-_]{20,})['"]'''
+entropy = 3.5
+keywords = ["key", "api", "token", "secret", "password"]
+
+[[rules]]
+description = "Stripe Webhook Secret"
+id = "stripe-webhook-secret"
+regex = '''(?i)whsec_[0-9a-zA-Z]{32,}'''
+keywords = ["whsec"]
+
+[allowlist]
+description = "Global allowlist for mock tokens in documentation and test suites"
+paths = [
+  '''k8s/base/secrets\.yaml$''',
+  '''\.env\.example$''',
+  '''docs/.*'''
+]
