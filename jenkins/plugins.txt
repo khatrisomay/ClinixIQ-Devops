@@ -1,0 +1,11 @@
+﻿git:latest
+workflow-aggregator:latest
+configuration-as-code:latest
+pipeline-stage-view:latest
+blueocean:latest
+docker-workflow:latest
+kubernetes:latest
+credentials-binding:latest
+timestamper:latest
+ws-cleanup:latest
+slack:latest
