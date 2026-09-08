@@ -1,0 +1,26 @@
+﻿jenkins:
+  systemMessage: "ClinixIQ Enterprise DevSecOps CI/CD Platform - Automated by JCasC"
+  numExecutors: 2
+  mode: NORMAL
+  scmCheckoutRetryCount: 3
+  labelString: "clinixiq-master controller"
+
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          password: "${JENKINS_ADMIN_PASSWORD:-admin12345}"
+          name: "DevOps Administrator"
+
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+unclassified:
+  location:
+    url: "http://localhost:8080/"
+    adminAddress: "devops@clinixiq.io"
+
+  globalLibraries:
+    libraries: []
