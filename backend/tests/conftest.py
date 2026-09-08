@@ -1,13 +1,16 @@
-﻿import pytest
+import pytest
 from fastapi.testclient import TestClient
+
 from app.main import app
 from app.models.schemas import TriageRequest
+
 
 @pytest.fixture(scope="session")
 def client():
     """FastAPI TestClient fixture."""
     with TestClient(app) as test_client:
         yield test_client
+
 
 @pytest.fixture
 def emergency_request():
@@ -17,8 +20,9 @@ def emergency_request():
         temperature=98.6,
         heart_rate=118,
         oxygen_level=88,
-        duration_days=1
+        duration_days=1,
     )
+
 
 @pytest.fixture
 def mild_uri_request():
@@ -28,5 +32,5 @@ def mild_uri_request():
         temperature=99.1,
         heart_rate=74,
         oxygen_level=99,
-        duration_days=3
+        duration_days=3,
     )

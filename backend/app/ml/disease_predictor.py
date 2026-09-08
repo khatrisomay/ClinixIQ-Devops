@@ -1,11 +1,11 @@
-﻿from typing import List, Dict, Tuple, Optional
-from datetime import datetime, timezone
 import time
+from datetime import UTC, datetime
 
 from app.ml.symptom_extractor import extract_symptoms
-from app.models.schemas import TriageRequest, TriageResponse, DifferentialMatch
+from app.models.schemas import DifferentialMatch, TriageRequest, TriageResponse
 
 # Knowledge Base of conditions with symptom profiles, base urgency, and care plans
+
 DISEASE_PROFILES = [
     {
         "name": "Acute Coronary / Cardiopulmonary Distress",
@@ -106,103 +106,152 @@ DISEASE_PROFILES = [
         "triage_color": "text-amber-400 bg-amber-500/10 border-amber-500/30",
         "action": "Humidified air, throat lozenges, and hydration. Schedule clinic visit if cough persists beyond 2 weeks.",
         "emergency_flag": False,
-    }
+    },
 ]
 
-def evaluate_vitals(request: TriageRequest) -> Dict[str, str]:
+
+def evaluate_vitals(request: TriageRequest) -> dict[str, str]:
     """Assess raw vital signs and generate risk flags."""
+
     assessment = {}
+
     if request.temperature is not None:
         if request.temperature >= 103.0:
-            assessment["temperature"] = "High Pyrexia / Severe Fever (>103°F)"
+            assessment["temperature"] = "High Pyrexia / Severe Fever (>103F)"
+
         elif request.temperature >= 100.4:
             assessment["temperature"] = "Mild/Moderate Fever"
+
         else:
             assessment["temperature"] = "Normal Range"
 
     if request.heart_rate is not None:
         if request.heart_rate > 120:
             assessment["heart_rate"] = "Marked Tachycardia (>120 bpm)"
+
         elif request.heart_rate < 50:
             assessment["heart_rate"] = "Bradycardia (<50 bpm)"
+
         else:
             assessment["heart_rate"] = "Normal Resting Heart Rate"
 
     if request.oxygen_level is not None:
         if request.oxygen_level < 92:
             assessment["oxygen"] = "Hypoxemia Alert (<92% SpO2)"
+
         elif request.oxygen_level < 95:
             assessment["oxygen"] = "Mildly Reduced SpO2"
+
         else:
             assessment["oxygen"] = "Optimal Oxygen Saturation"
 
     return assessment
 
+
 def predict_triage(request: TriageRequest) -> TriageResponse:
     """Core triage scoring and ML inference engine."""
+
     start_time = time.time()
-    
+
     extracted = extract_symptoms(request.symptoms)
+
     vitals_flags = evaluate_vitals(request)
-    
+
     scores = []
+
     for profile in DISEASE_PROFILES:
         target_symptoms = set(profile["symptoms"])
+
         matched = target_symptoms.intersection(set(extracted))
+
         matched_count = len(matched)
-        
+
         if matched_count > 0:
             match_ratio = matched_count / len(target_symptoms)
+
             raw_score = match_ratio * profile["base_weight"] * 100.0
-            
+
             # High-signal bonus for multi-symptom alignment
+
             if matched_count >= 2:
                 raw_score += 15.0
+
         else:
             raw_score = 4.0
-            
+
         # Vitals heuristic escalations
-        if request.oxygen_level and request.oxygen_level < 92 and profile["category"] in ["Cardiopulmonary", "Respiratory"]:
+
+        if (
+            request.oxygen_level
+            and request.oxygen_level < 92
+            and profile["category"] in ["Cardiopulmonary", "Respiratory"]
+        ):
             raw_score *= 1.4
-        if request.temperature and request.temperature > 102 and profile["name"] in ["Bacterial Meningitis Suspect", "Community-Acquired Bacterial Pneumonia"]:
+
+        if (
+            request.temperature
+            and request.temperature > 102
+            and profile["name"]
+            in ["Bacterial Meningitis Suspect", "Community-Acquired Bacterial Pneumonia"]
+        ):
             raw_score *= 1.3
-            
+
         scores.append((profile, raw_score))
 
     # Sort profiles by raw score
+
     scores.sort(key=lambda x: x[1], reverse=True)
-    
+
     top_profile, top_score = scores[0]
-    
+
     # Calculate confidence based on top condition match strength
-    symptom_count = len(extracted)
     base_confidence = min(96, int(68 + min(top_score * 0.22, 24)))
-    if top_profile.get("emergency_flag") and ("chest_pain" in extracted or (request.oxygen_level and request.oxygen_level < 92)):
+
+    if top_profile.get("emergency_flag") and (
+        "chest_pain" in extracted or (request.oxygen_level and request.oxygen_level < 92)
+    ):
         base_confidence = max(88, base_confidence)
+
     confidence = base_confidence
 
     # Normalize probabilities for top differential matches
+
     total_score = sum(s[1] for s in scores[:5])
-    differentials: List[DifferentialMatch] = []
+
+    differentials: list[DifferentialMatch] = []
+
     for prof, sc in scores[:5]:
         prob = int(round((sc / total_score) * 100))
+
         prob = max(5, min(95, prob))
-        differentials.append(DifferentialMatch(
-            condition=prof["name"],
-            probability=prob,
-            risk=prof["urgency"],
-            category=prof["category"]
-        ))
-    
+
+        differentials.append(
+            DifferentialMatch(
+                condition=prof["name"],
+                probability=prob,
+                risk=prof["urgency"],
+                category=prof["category"],
+            )
+        )
+
     # Emergency escalation rule
+
     severity = top_profile["urgency"]
+
     triage_color = top_profile["triage_color"]
+
     action = top_profile["action"]
-    
-    if "chest_pain" in extracted or "shortness_of_breath" in extracted or (request.oxygen_level and request.oxygen_level < 92):
+
+    if (
+        "chest_pain" in extracted
+        or "shortness_of_breath" in extracted
+        or (request.oxygen_level and request.oxygen_level < 92)
+    ):
         if not top_profile["emergency_flag"]:
             severity = "High Alert / Urgent Escalation"
+
             triage_color = "text-rose-400 bg-rose-500/10 border-rose-500/30"
+
             action = "Chest tightness or dyspnea detected. Immediate professional clinical assessment strongly advised."
 
     elapsed_ms = round((time.time() - start_time) * 1000, 2)
@@ -218,5 +267,5 @@ def predict_triage(request: TriageRequest) -> TriageResponse:
         vitals_assessment=vitals_flags,
         model_version="ClinixIQ-XGBoost-Med-v2.4",
         inference_latency_ms=elapsed_ms,
-        timestamp=datetime.now(timezone.utc).isoformat()
+        timestamp=datetime.now(UTC).isoformat(),
     )
