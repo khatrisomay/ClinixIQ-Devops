@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes import graphs, triage
 from app.core.config import settings
+from app.core.logging_middleware import structured_logging_middleware
 from app.core.metrics import get_metrics_response, prometheus_middleware
 from app.core.redis import cache_manager
 from app.models.schemas import HealthCheckResponse
@@ -39,6 +40,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.middleware("http")(prometheus_middleware)
+app.middleware("http")(structured_logging_middleware)
 
 app.include_router(triage.router)
 app.include_router(graphs.router)
