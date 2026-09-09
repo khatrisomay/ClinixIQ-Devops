@@ -1,7 +1,14 @@
 import hashlib
+import time
 
 from fastapi import APIRouter, HTTPException, status
 
+from app.core.metrics import (
+    CACHE_HITS_TOTAL,
+    CACHE_MISSES_TOTAL,
+    MODEL_INFERENCE_DURATION_SECONDS,
+    TRIAGE_PREDICTIONS_TOTAL,
+)
 from app.core.redis import cache_manager
 from app.ml.disease_predictor import predict_triage
 from app.models.schemas import TriageRequest, TriageResponse
@@ -30,9 +37,27 @@ async def evaluate_symptoms(request: TriageRequest):
     cache_key = generate_cache_key(request)
     cached_data = await cache_manager.get(cache_key)
     if cached_data:
+        CACHE_HITS_TOTAL.labels(cache_type="triage_prediction").inc()
         return TriageResponse(**cached_data)
 
+    CACHE_MISSES_TOTAL.labels(cache_type="triage_prediction").inc()
+
+    start_infer = time.time()
     result = predict_triage(request)
+    infer_duration = time.time() - start_infer
+
+    MODEL_INFERENCE_DURATION_SECONDS.labels(model_version=result.model_version).observe(
+        infer_duration
+    )
+    is_emergency = (
+        "true" if "Emergency" in result.severity or "High Alert" in result.severity else "false"
+    )
+    TRIAGE_PREDICTIONS_TOTAL.labels(
+        condition=result.condition,
+        severity=result.severity,
+        emergency=is_emergency,
+    ).inc()
+
     await cache_manager.set(cache_key, result.model_dump(), ttl=1800)
     return result
 
