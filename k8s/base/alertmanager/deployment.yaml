@@ -1,0 +1,49 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clinixiq-alertmanager
+  namespace: clinixiq
+  labels:
+    app.kubernetes.io/name: clinixiq-alertmanager
+    app.kubernetes.io/component: alerting
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: clinixiq-alertmanager
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: clinixiq-alertmanager
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        fsGroup: 65534
+      containers:
+        - name: alertmanager
+          image: prom/alertmanager:v0.27.0
+          args:
+            - "--config.file=/etc/alertmanager/alertmanager.yml"
+            - "--storage.path=/alertmanager"
+          ports:
+            - containerPort: 9093
+              name: mesh
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/alertmanager
+            - name: storage-volume
+              mountPath: /alertmanager
+      volumes:
+        - name: config-volume
+          configMap:
+            name: alertmanager-config
+        - name: storage-volume
+          emptyDir: {}
