@@ -1,0 +1,27 @@
+﻿apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: clinixiq
+  labels:
+    app.kubernetes.io/name: clinixiq-prometheus
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+    scrape_configs:
+      - job_name: 'clinixiq-backend'
+        scrape_interval: 10s
+        metrics_path: '/metrics'
+        kubernetes_sd_configs:
+          - role: endpoints
+            namespaces:
+              names: ['clinixiq']
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_name]
+            action: keep
+            regex: clinixiq-backend-service
+      - job_name: 'kubernetes-nodes'
+        kubernetes_sd_configs:
+          - role: node
