@@ -1,0 +1,53 @@
+﻿global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+  external_labels:
+    monitor: 'clinixiq-telemetry-monitor'
+    environment: 'production'
+
+rule_files:
+  - '/etc/prometheus/alert.rules.yml'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+scrape_configs:
+  # ClinixIQ FastAPI ML Microservice
+  - job_name: 'clinixiq-backend'
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['backend:8000']
+        labels:
+          service: 'backend-api'
+          tier: 'application'
+
+  # ClinixIQ React SPA Web Server
+  - job_name: 'clinixiq-frontend'
+    scrape_interval: 30s
+    metrics_path: '/healthz'
+    static_configs:
+      - targets: ['frontend:8080']
+        labels:
+          service: 'frontend-web'
+          tier: 'presentation'
+
+  # Redis Telemetry Exporter
+  - job_name: 'redis-exporter'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['redis-exporter:9121']
+        labels:
+          service: 'redis-cache'
+          tier: 'database'
+
+  # Prometheus Self-Monitoring
+  - job_name: 'prometheus'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'monitoring'
