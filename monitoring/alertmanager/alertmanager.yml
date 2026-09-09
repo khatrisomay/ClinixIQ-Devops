@@ -1,0 +1,35 @@
+﻿global:
+  resolve_timeout: 5m
+
+route:
+  group_by: ['alertname', 'service', 'severity']
+  group_wait: 10s
+  group_interval: 1m
+  repeat_interval: 4h
+  receiver: 'clinixiq-webhook'
+  routes:
+    - match:
+        severity: critical
+      receiver: 'clinixiq-critical-webhook'
+      repeat_interval: 1h
+
+inhibit_rules:
+  # Inhibit warnings if the same service has an active critical alert
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['service', 'instance']
+
+receivers:
+  - name: 'clinixiq-webhook'
+    webhook_configs:
+      - url: 'http://backend:8000/api/v1/alerts/webhook'
+        send_resolved: true
+        max_alerts: 10
+
+  - name: 'clinixiq-critical-webhook'
+    webhook_configs:
+      - url: 'http://backend:8000/api/v1/alerts/critical'
+        send_resolved: true
+        max_alerts: 5
