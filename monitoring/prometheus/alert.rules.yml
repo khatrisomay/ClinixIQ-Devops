@@ -1,0 +1,64 @@
+﻿groups:
+  - name: clinixiq_service_alerts
+    rules:
+      - alert: ClinixIQServiceDown
+        expr: up{job="clinixiq-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          tier: application
+        annotations:
+          summary: "ClinixIQ Backend API instance is unreachable"
+          description: "Target {{ $labels.instance }} has been down for over 1 minute. Patient triage endpoint is currently degraded."
+
+      - alert: HighHttpErrorRate
+        expr: (sum(rate(http_requests_total{status=~"5.."}[2m])) / sum(rate(http_requests_total[2m]))) * 100 > 1
+        for: 2m
+        labels:
+          severity: critical
+          tier: application
+        annotations:
+          summary: "ClinixIQ API HTTP 5xx error rate exceeded 1%"
+          description: "Current 5xx error rate is {{ $value | printf \"%.2f\" }}%. Immediate investigation required."
+
+      - alert: HighP95InferenceLatency
+        expr: histogram_quantile(0.95, sum(rate(model_inference_duration_seconds_bucket[5m])) by (le)) > 0.5
+        for: 3m
+        labels:
+          severity: warning
+          tier: application
+        annotations:
+          summary: "P95 AI Model Inference Latency exceeds 500ms"
+          description: "95th percentile inference duration is {{ $value | printf \"%.3f\" }}s. Potential compute throttling or batch bottleneck."
+
+      - alert: RedisCacheDown
+        expr: redis_up{job="redis-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          tier: database
+        annotations:
+          summary: "ClinixIQ Redis cache instance is down"
+          description: "Redis caching layer is offline. Microservice has fallen back to in-memory caching."
+
+  - name: clinixiq_clinical_sla_alerts
+    rules:
+      - alert: LowCacheHitRatio
+        expr: (sum(rate(cache_hits_total[5m])) / (sum(rate(cache_hits_total[5m])) + sum(rate(cache_misses_total[5m])))) < 0.4
+        for: 5m
+        labels:
+          severity: warning
+          tier: performance
+        annotations:
+          summary: "Redis clinical triage cache hit ratio is below 40%"
+          description: "Cache hit ratio is currently {{ $value | printf \"%.2f\" }}. Consider increasing TTL or evaluating key distribution."
+
+      - alert: EmergencyTriageSpike
+        expr: (sum(rate(triage_predictions_total{emergency="true"}[5m])) / sum(rate(triage_predictions_total[5m]))) > 0.25
+        for: 3m
+        labels:
+          severity: warning
+          tier: clinical
+        annotations:
+          summary: "Unusual surge in Emergency Triage classifications (>25%)"
+          description: "Emergency cases account for {{ $value | printf \"%.1f\" }}% of all intakes in the last 5 minutes. Check for localized disease outbreaks or synthetic anomalies."
