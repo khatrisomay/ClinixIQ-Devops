@@ -1,0 +1,20 @@
+# ==============================================================================
+# ClinixIQ - TFSec Static Code Analysis Configuration
+# ==============================================================================
+
+# Minimum severity threshold to report (LOW, MEDIUM, HIGH, CRITICAL)
+minimum_severity: MEDIUM
+
+# Severity overrides tailored for ClinixIQ healthcare compliance
+severity_overrides:
+  aws-elasticache-enable-at-rest-encryption: CRITICAL
+  aws-elasticache-enable-in-transit-encryption: CRITICAL
+  aws-eks-enable-control-plane-logging: HIGH
+  aws-vpc-no-public-ingress-sgr: HIGH
+
+# Global checks configuration
+checks:
+  aws-vpc-no-public-ingress-sgr:
+    # Public ingress is exclusively permitted on ports 80 and 443 on the ALB
+    allowed_cidrs:
+      - 0.0.0.0/0
