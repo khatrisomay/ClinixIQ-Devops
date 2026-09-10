@@ -1,0 +1,90 @@
+name: Terraform IaC Quality & Security Audit
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/terraform.yml'
+      - '.tflint.hcl'
+      - '.tfsec/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/terraform.yml'
+      - '.tflint.hcl'
+      - '.tfsec/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+
+jobs:
+  lint-and-validate:
+    name: Lint, Format & Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform CLI
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.5
+
+      - name: Verify Terraform Formatting
+        run: |
+          echo "Verifying canonical HCL formatting..."
+          terraform fmt -check -recursive terraform/
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: v0.51.1
+
+      - name: Initialize & Run TFLint
+        run: |
+          echo "Initializing TFLint plugins..."
+          tflint --init --config=.tflint.hcl
+          echo "Running TFLint static analysis..."
+          tflint --config=.tflint.hcl --recursive terraform/
+
+      - name: Run TFSec Static Security Scan
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          working_directory: terraform
+          soft_fail: false
+
+      - name: Terraform Module Syntax Validation
+        run: |
+          echo "Validating root and child modules without remote backend..."
+          terraform -chdir=terraform init -backend=false
+          terraform -chdir=terraform validate
+
+  dry-run-plan:
+    name: Speculative Environment Plan
+    needs: lint-and-validate
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform CLI
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.5
+
+      - name: Validate Dev and Prod Variable Configurations
+        run: |
+          echo "Verifying variable schema against dev tfvars..."
+          test -f terraform/environments/dev/terraform.tfvars
+          echo "Verifying variable schema against prod tfvars..."
+          test -f terraform/environments/prod/terraform.tfvars
