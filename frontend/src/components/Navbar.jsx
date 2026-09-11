@@ -1,7 +1,8 @@
-﻿import React from 'react';
+import React from 'react';
 import BrandLogo from './BrandLogo';
+import { Sparkles } from 'lucide-react';
 
-export default function Navbar({ activeTab, setActiveTab }) {
+export default function Navbar({ activeTab, setActiveTab, currentPlan = 'starter', onOpenBillingModal }) {
   const navLinks = [
     { id: 'triage', label: 'Triage Assistant' },
     { id: 'analytics', label: 'Risk Analytics' },
@@ -47,20 +48,38 @@ export default function Navbar({ activeTab, setActiveTab }) {
           ))}
         </nav>
 
-        {/* Right CTA and Patient Profile */}
-        <div className="flex items-center gap-4">
+        {/* Right Plan Badge and Actions */}
+        <div className="flex items-center gap-3">
+          {/* Subscription Tier Status Badge */}
           <button
-            onClick={() => setActiveTab('pricing')}
-            className="hidden sm:inline-flex items-center justify-center px-5 py-2 rounded-full bg-[#006194] text-white text-xs font-bold hover:bg-[#007bb9] transition-all shadow-md shadow-[#006194]/20 active:scale-95"
+            type="button"
+            onClick={onOpenBillingModal}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${
+              currentPlan === 'pro'
+                ? 'bg-sky-50 text-sky-700 border-sky-300 hover:bg-sky-100'
+                : currentPlan === 'enterprise'
+                ? 'bg-indigo-50 text-indigo-700 border-indigo-300 hover:bg-indigo-100'
+                : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
+            }`}
           >
-            Upgrade to Pro
+            <Sparkles className="w-3.5 h-3.5 text-sky-500" />
+            <span className="capitalize">{currentPlan} Plan</span>
           </button>
+
+          {currentPlan === 'starter' && (
+            <button
+              onClick={() => setActiveTab('pricing')}
+              className="hidden sm:inline-flex items-center justify-center px-4 py-2 rounded-full bg-[#006194] text-white text-xs font-bold hover:bg-[#007bb9] transition-all shadow-md shadow-[#006194]/20 active:scale-95"
+            >
+              Upgrade to Pro
+            </button>
+          )}
 
           <div className="flex items-center gap-2">
             <img
-              alt="Clinical Patient Profile"
-              className="w-10 h-10 rounded-full object-cover ring-2 ring-[#0284c7]/40 shadow-sm"
-              src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=160"
+              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120"
+              alt="Patient Profile"
+              className="w-9 h-9 rounded-full object-cover border-2 border-[#007bb9]/40"
             />
           </div>
         </div>

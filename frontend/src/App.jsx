@@ -5,10 +5,13 @@ import TriageChatPanel from './components/TriageChatPanel';
 import AnalyticsPanel from './components/AnalyticsPanel';
 import PricingSection from './components/PricingSection';
 import SBARSummaryModal from './components/SBARSummaryModal';
+import SubscriptionStatusModal from './components/SubscriptionStatusModal';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('triage');
   const [isSbarModalOpen, setIsSbarModalOpen] = useState(false);
+  const [isBillingModalOpen, setIsBillingModalOpen] = useState(false);
+  const [currentPlan, setCurrentPlan] = useState('starter');
   const [triageData, setTriageData] = useState(null);
 
   const handleTriageComplete = (result) => {
@@ -40,6 +43,8 @@ export default function App() {
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        currentPlan={currentPlan}
+        onOpenBillingModal={() => setIsBillingModalOpen(true)}
       />
 
       {/* Main Content Area: Edge-to-Edge Fluid Full Width */}
