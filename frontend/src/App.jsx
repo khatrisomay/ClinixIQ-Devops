@@ -6,6 +6,7 @@ import AnalyticsPanel from './components/AnalyticsPanel';
 import PricingSection from './components/PricingSection';
 import SBARSummaryModal from './components/SBARSummaryModal';
 import SubscriptionStatusModal from './components/SubscriptionStatusModal';
+import CheckoutFeedbackModal from './components/CheckoutFeedbackModal';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('triage');
