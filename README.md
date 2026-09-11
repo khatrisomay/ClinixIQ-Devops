@@ -8,16 +8,17 @@
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-Orchestration-326CE5?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
 [![Terraform](https://img.shields.io/badge/Terraform-1.8.5%20IaC-844FBA?logo=terraform&logoColor=white)](https://www.terraform.io/)
 [![AWS](https://img.shields.io/badge/AWS-EKS%20%7C%20ElastiCache-232F3E?logo=amazon-aws&logoColor=white)](https://aws.amazon.com/)
+[![Stripe](https://img.shields.io/badge/Stripe-SaaS%20Billing-635BFF?logo=stripe&logoColor=white)](https://stripe.com/)
 [![Jenkins](https://img.shields.io/badge/Jenkins-Declarative%20CI%2FCD-D24939?logo=jenkins&logoColor=white)](https://www.jenkins.io/)
 [![Prometheus](https://img.shields.io/badge/Prometheus-Metrics%20Telemetry-E6522C?logo=prometheus&logoColor=white)](https://prometheus.io/)
 [![Grafana](https://img.shields.io/badge/Grafana-SRE%20Dashboards-F46800?logo=grafana&logoColor=white)](https://grafana.com/)
 [![Helm](https://img.shields.io/badge/Helm-3%20Package-0F1689?logo=helm&logoColor=white)](https://helm.sh/)
 
-**ClinixIQ** is an enterprise-grade, commercial AI-powered symptom triage and disease risk analytics platform. Designed to demonstrate a complete production DevOps lifecycle, ClinixIQ combines interactive clinical NLP triage with Python-generated diagnostic analytics, containerized with Docker, orchestrated via Kubernetes, continuously delivered via automated Jenkins and GitHub Actions CI/CD pipelines, provisioned across multi-AZ AWS infrastructure via Terraform, and monitored with Prometheus & Grafana.
+**ClinixIQ** is an enterprise-grade, commercial AI-powered symptom triage and disease risk analytics platform. Designed to demonstrate a complete production DevOps lifecycle, ClinixIQ combines interactive clinical NLP triage with Python-generated diagnostic analytics, containerized with Docker, orchestrated via Kubernetes, continuously delivered via automated Jenkins and GitHub Actions CI/CD pipelines, provisioned across multi-AZ AWS infrastructure via Terraform, monetized via Stripe subscriptions, and monitored with Prometheus & Grafana.
 
 ---
 
-## 🏗️ Enterprise Cloud & Telemetry Architecture
+## 🏗️ Enterprise Cloud, Monetization & Telemetry Architecture
 
 ```
                              [ Internet / User Traffic ]
@@ -30,7 +31,7 @@
                   ┌───────────────────────┴───────────────────────┐
                   │ Path: /*                                      │ Path: /api/*, /metrics
                   ▼                                               ▼
-         [ React Frontend UI ]                          [ FastAPI ML Microservice ]
+         [ React Frontend UI ]                          [ FastAPI ML & Billing Engine ]
            (Nginx Pods on EKS)                            (Python Pods with IRSA)
                                                                   │
                   ┌───────────────────────────────────────────────┼──────────────────────────────┐
@@ -38,16 +39,27 @@
       [ ML Inference Engine ]                         [ ElastiCache Redis ]            [ Prometheus Server ]
         (Diagnostic Analytics)                          (Multi-AZ Replication)           (Port 9090 Telemetry)
                                                                   │                              │
-                                                                  ▼                              ▼
-                                                      [ KMS Envelope Encryption ]      [ Grafana Dashboard ]
-                                                        (HIPAA Data Protection)          (Port 3001 SRE View)
+                  ┌───────────────────────────────────────────────┼──────────────────────────────┘
+                  ▼                                               ▼                              ▼
+      [ Stripe Payment Gateway ]                      [ KMS Envelope Encryption ]      [ Grafana Dashboard ]
+        (Checkout & Webhooks)                           (HIPAA Data Protection)          (Port 3001 SRE View)
 ```
+
+---
+
+## 💳 Commercial Monetization & Stripe Billing Engine
+
+- **Self-Service Subscriptions**: Seamless Stripe Checkout Sessions supporting Starter ($0), Pro ($9.99/mo), and Enterprise ($149/mo) tiers with automated 20% annual discounts.
+- **Cryptographic Webhooks**: Real-time asynchronous state synchronization verified via HMAC-SHA256 signatures on `/api/webhooks/stripe`.
+- **Distributed Idempotency Defense**: Atomic Redis `SET NX` locks with 24-hour TTL preventing duplicate webhook execution and replay attacks.
+- **Clinical Quota Metering**: Tier-based monthly query rate-limiting with automated HTTP 402 Payment Required enforcement on `/api/v1/triage/predict`.
+- **Customer Billing Portal**: Self-service subscription management, invoice downloads, and card updates via Stripe Billing Portal.
 
 ---
 
 ## 📊 Observability & SRE Stack
 
-- **Prometheus Telemetry**: Custom metrics tracking throughput, p95/p99 latency, disease classification distributions, and cache hit ratios on `/metrics`.
+- **Prometheus Telemetry**: Custom metrics tracking throughput, p95/p99 latency, disease classification distributions, active subscriptions, MRR, and cache hit ratios on `/metrics`.
 - **Pre-Configured Grafana Dashboard**: Automated datasource and dashboard provisioning located at `http://localhost:3001` (admin / `clinixiq-admin`).
 - **SRE Alerting Rules**: Automated alerts for `HighInferenceLatency`, `HighErrorRate`, `ClinixIQServiceDown`, and `RedisCacheDown`.
 - **OpenTelemetry & Structured Logging**: W3C distributed trace spans and HIPAA-compliant JSON audit logging with correlation ID propagation.
@@ -88,6 +100,11 @@ python scripts/generate-load.py --requests 200 --delay 0.05
 ./scripts/tf-deploy.sh validate dev
 ```
 
+### 5. Run Full Automated Test Suite
+```bash
+pytest backend/tests/test_triage.py backend/tests/test_metrics.py backend/tests/test_billing.py backend/tests/test_webhooks.py
+```
+
 ---
 
 ## 📅 14-Day Delivery Roadmap
@@ -97,4 +114,5 @@ python scripts/generate-load.py --requests 200 --delay 0.05
 - **Day 5**: Jenkins declarative 8-stage pipeline, GitHub Actions matrix CI/CD, Trivy container scanning, and Gitleaks. *(Complete)*
 - **Day 6**: Full Observability stack (Prometheus metrics, Grafana dashboards, Alertmanager, and SRE runbooks). *(Complete)*
 - **Day 7**: Cloud Infrastructure as Code (Terraform), AWS EKS cluster, ElastiCache Redis, ALB with ACM TLS, KMS encryption, Secrets Manager, and Disaster Recovery. *(Complete)*
-- **Days 8–14**: Stripe commercial billing integration, end-to-end automated smoke testing, and production verification.
+- **Day 8**: Commercial Monetization, Stripe Checkout, Webhooks, Subscription Management, and Quota Metering. *(Complete)*
+- **Days 9–14**: Comprehensive end-to-end automated smoke testing, Chaos Engineering, and production verification.
