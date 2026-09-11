@@ -5,7 +5,7 @@ ClinixIQ - Commercial Billing & Subscription Pydantic Schemas
 from datetime import datetime, timezone
 from enum import Enum
 from typing import List, Optional
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PlanTier(str, Enum):
@@ -41,7 +41,7 @@ class PlanInfo(BaseModel):
 
 
 class CheckoutSessionRequest(BaseModel):
-    customer_email: EmailStr
+    customer_email: str
     plan_tier: PlanTier
     billing_cycle: BillingCycle = BillingCycle.MONTHLY
     customer_id: Optional[str] = None

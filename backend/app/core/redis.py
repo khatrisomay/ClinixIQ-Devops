@@ -61,4 +61,15 @@ class CacheManager:
         self._memory_cache[key] = value
 
 
+
+    def is_connected(self) -> bool:
+        return self.is_redis_active
+
+    @property
+    def client(self):
+        return self._redis
+
+
 cache_manager = CacheManager()
+redis_client = cache_manager
+
