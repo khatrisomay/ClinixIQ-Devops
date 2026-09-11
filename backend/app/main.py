@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import graphs, triage
+from app.api.routes import billing, graphs, triage
 from app.core.config import settings
 from app.core.logging_middleware import structured_logging_middleware
 from app.core.metrics import get_metrics_response, prometheus_middleware
@@ -44,6 +44,7 @@ app.middleware("http")(structured_logging_middleware)
 
 app.include_router(triage.router)
 app.include_router(graphs.router)
+app.include_router(billing.router)
 
 
 @app.get("/metrics", summary="Prometheus Metrics Exposition Endpoint")
