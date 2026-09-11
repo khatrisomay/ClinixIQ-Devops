@@ -12,6 +12,7 @@ from app.models.billing import (
     SubscriptionDetails,
     SubscriptionStatus,
 )
+from app.core.metrics import ACTIVE_SUBSCRIPTIONS_TOTAL, MONTHLY_RECURRING_REVENUE_DOLLARS, STRIPE_WEBHOOK_EVENTS_TOTAL
 from app.services.billing_repository import billing_repository
 from app.services.usage_meter import usage_meter
 
@@ -47,6 +48,7 @@ class WebhookDispatcher:
         if handler:
             try:
                 await handler(data_object)
+                STRIPE_WEBHOOK_EVENTS_TOTAL.labels(event_type=event_type, status="success").inc()
                 logger.info(f"Successfully handled event: {event_type}")
                 return True
             except Exception as exc:

@@ -52,6 +52,32 @@ CACHE_MISSES_TOTAL = Counter(
     "cache_misses_total", "Total Redis cache misses requiring fresh ML evaluation", ["cache_type"]
 )
 
+# Commercial Monetization & Billing Metrics
+ACTIVE_SUBSCRIPTIONS_TOTAL = Gauge(
+    "active_subscriptions_total",
+    "Current count of active paying subscriptions by tier",
+    ["tier"],
+)
+
+MONTHLY_RECURRING_REVENUE_DOLLARS = Gauge(
+    "monthly_recurring_revenue_dollars",
+    "Estimated Monthly Recurring Revenue in USD by plan tier",
+    ["tier"],
+)
+
+STRIPE_WEBHOOK_EVENTS_TOTAL = Counter(
+    "stripe_webhook_events_total",
+    "Total incoming Stripe webhook events evaluated",
+    ["event_type", "status"],
+)
+
+STRIPE_CHECKOUT_SESSIONS_TOTAL = Counter(
+    "stripe_checkout_sessions_total",
+    "Total initiated Stripe checkout sessions",
+    ["tier", "billing_cycle"],
+)
+
+
 
 async def prometheus_middleware(request: Request, call_next: Callable) -> Response:
     """Middleware collecting HTTP traffic metrics for Prometheus scraping."""
