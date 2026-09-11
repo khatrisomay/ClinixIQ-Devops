@@ -12,3 +12,4 @@ redis>=5.0.0
 prometheus-client>=0.20.0
 opentelemetry-api>=1.24.0
 opentelemetry-sdk>=1.24.0
+stripe>=9.0.0
