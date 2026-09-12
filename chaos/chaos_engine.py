@@ -13,6 +13,27 @@ from typing import Any, Dict, List, Optional
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("clinixiq.chaos")
 
+# Optional Prometheus telemetry integration
+try:
+    from app.core.metrics import (
+        ACTIVE_CHAOS_EXPERIMENTS,
+        CHAOS_EXPERIMENTS_TOTAL,
+        CHAOS_INJECTED_FAULTS_TOTAL,
+        CHAOS_RECOVERY_DURATION_SECONDS,
+    )
+    HAS_TELEMETRY = True
+except Exception:
+    try:
+        from backend.app.core.metrics import (
+            ACTIVE_CHAOS_EXPERIMENTS,
+            CHAOS_EXPERIMENTS_TOTAL,
+            CHAOS_INJECTED_FAULTS_TOTAL,
+            CHAOS_RECOVERY_DURATION_SECONDS,
+        )
+        HAS_TELEMETRY = True
+    except Exception:
+        HAS_TELEMETRY = False
+
 
 class ChaosFaultType(str, Enum):
     REDIS_DISCONNECT = "redis_disconnect"
@@ -90,6 +111,12 @@ class ChaosExperiment(abc.ABC):
         start_time = time.time()
         mttr_seconds = 0.0
 
+        if HAS_TELEMETRY:
+            try:
+                ACTIVE_CHAOS_EXPERIMENTS.inc()
+            except Exception:
+                pass
+
         try:
             # 1. Probe Baseline Steady State
             logger.info("Phase 1: Probing baseline steady state before fault injection...")
@@ -102,6 +129,14 @@ class ChaosExperiment(abc.ABC):
             logger.info(f"Phase 2: Injecting fault [{self.fault_type.value}] for {self.duration_seconds}s...")
             fault_start = time.time()
             self.inject_fault()
+
+            if HAS_TELEMETRY:
+                try:
+                    CHAOS_INJECTED_FAULTS_TOTAL.labels(
+                        fault_type=self.fault_type.value, target=self.target_url
+                    ).inc()
+                except Exception:
+                    pass
 
             # Observe system during active fault
             time.sleep(min(self.duration_seconds, 2.0))
@@ -137,6 +172,14 @@ class ChaosExperiment(abc.ABC):
             self.status = ExperimentStatus.PASSED
             logger.info(f"✔ Experiment PASSED: {self.name} (MTTR: {mttr_seconds}s)")
 
+            if HAS_TELEMETRY and mttr_seconds > 0:
+                try:
+                    CHAOS_RECOVERY_DURATION_SECONDS.labels(
+                        experiment=self.name, fault_type=self.fault_type.value
+                    ).observe(mttr_seconds)
+                except Exception:
+                    pass
+
             return ChaosExecutionReport(
                 experiment_name=self.name,
                 fault_type=self.fault_type,
@@ -167,6 +210,17 @@ class ChaosExperiment(abc.ABC):
                 steady_states=steady_states,
                 failure_reason=str(exc),
             )
+        finally:
+            if HAS_TELEMETRY:
+                try:
+                    ACTIVE_CHAOS_EXPERIMENTS.dec()
+                    CHAOS_EXPERIMENTS_TOTAL.labels(
+                        experiment=self.name,
+                        fault_type=self.fault_type.value,
+                        status=self.status.value,
+                    ).inc()
+                except Exception:
+                    pass
 
 
 class ChaosEngine:

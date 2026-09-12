@@ -77,6 +77,31 @@ STRIPE_CHECKOUT_SESSIONS_TOTAL = Counter(
     ["tier", "billing_cycle"],
 )
 
+# Chaos Engineering & Resilience Telemetry
+CHAOS_EXPERIMENTS_TOTAL = Counter(
+    "chaos_experiments_total",
+    "Total chaos engineering experiments executed",
+    ["experiment", "fault_type", "status"],
+)
+
+ACTIVE_CHAOS_EXPERIMENTS = Gauge(
+    "active_chaos_experiments",
+    "Current number of actively running chaos experiments",
+)
+
+CHAOS_INJECTED_FAULTS_TOTAL = Counter(
+    "chaos_injected_faults_total",
+    "Total synthetic faults injected by chaos testing framework",
+    ["fault_type", "target"],
+)
+
+CHAOS_RECOVERY_DURATION_SECONDS = Histogram(
+    "chaos_recovery_duration_seconds",
+    "Mean Time To Recovery (MTTR) observed during chaos experiments in seconds",
+    ["experiment", "fault_type"],
+    buckets=[0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 15.0, 30.0],
+)
+
 
 
 async def prometheus_middleware(request: Request, call_next: Callable) -> Response:
