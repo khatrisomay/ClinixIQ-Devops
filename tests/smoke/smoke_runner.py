@@ -166,8 +166,7 @@ class SmokeRunner:
 
     def print_summary(self) -> int:
         summary = self.get_summary()
-        print("
-" + "=" * 60)
+        print("\n" + "=" * 60)
         print("  ClinixIQ Production Smoke Testing Summary")
         print("=" * 60)
         print(f"  Target Base URL : {self.base_url}")
@@ -176,8 +175,7 @@ class SmokeRunner:
         print(f"  Failed          : {summary['failed']} ✘")
         print(f"  Pass Rate       : {summary['pass_rate_percent']}%")
         print(f"  Average Latency : {summary['avg_latency_ms']} ms")
-        print("=" * 60 + "
-")
+        print("=" * 60 + "\n")
         return 0 if summary["failed"] == 0 else 1
 
 
