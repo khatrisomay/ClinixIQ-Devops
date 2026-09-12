@@ -1,0 +1,31 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: clinixiq-redis-network-delay
+  namespace: clinixiq
+  labels:
+    app.kubernetes.io/name: clinixiq
+    app.kubernetes.io/component: chaos
+    chaos.clinixiq.io/experiment: network-delay
+spec:
+  action: delay
+  mode: all
+  selector:
+    namespaces:
+      - clinixiq
+    labelSelectors:
+      app: backend
+  delay:
+    latency: "250ms"
+    jitter: "40ms"
+    correlation: "25"
+  direction: to
+  target:
+    selector:
+      namespaces:
+        - clinixiq
+      labelSelectors:
+        app: redis
+  duration: "45s"
+  scheduler:
+    cron: "@every 30m"

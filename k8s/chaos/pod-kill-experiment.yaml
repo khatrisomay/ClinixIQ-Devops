@@ -1,0 +1,20 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: clinixiq-backend-pod-kill
+  namespace: clinixiq
+  labels:
+    app.kubernetes.io/name: clinixiq
+    app.kubernetes.io/component: chaos
+    chaos.clinixiq.io/experiment: pod-kill
+spec:
+  action: pod-kill
+  mode: one
+  selector:
+    namespaces:
+      - clinixiq
+    labelSelectors:
+      app: backend
+  scheduler:
+    cron: "@every 10m"
+  duration: "30s"
